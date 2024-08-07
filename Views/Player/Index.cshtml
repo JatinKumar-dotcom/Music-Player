@@ -1,0 +1,431 @@
+﻿@model asp_applicatie.ViewModels.PlayListSongViewModel
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Index";
+    var index = ViewBag.SongId;
+
+    var albums = ViewBag.albums;
+    var songs = ViewBag.songs;
+    var playlists = ViewBag.playlists;
+}
+<style>
+    #musicPlayer {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 5px;
+        cursor: pointer;
+    }
+
+    .fa-star {
+        color: #ffd700; /* Set the default star color to yellow */
+        cursor: pointer;
+    }
+
+    .fa-star-o {
+        color: #ccc; /* Set the default star outline color to gray */
+        cursor: pointer;
+    }
+</style>
+
+<audio controls id="musicPlayer">
+    <source id="audioSource" type="audio/mp3">
+</audio>
+
+
+<ul class="song-list">
+    @if (Model.songs != null)
+    {
+        foreach (var song in Model.songs)
+        {
+            <li>
+                <div class="song-item" data-songid="@song.SongId" data-filepath="@song.AudioFilePath">
+                    @song.SongTitle
+                </div>
+                <div class="rating" data-songid="@song.SongId" data-user-rating="@song.Ratings">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="fa fa-star" data-rating="@i"></i>
+                    }
+                </div>
+            </li>
+        }
+    }
+</ul>
+<button class="clear-queue btn btn-primary">Clear</button>
+
+<br />
+<br />
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mx-auto">
+            <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                <h2>Songs</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(songs != null)
+                        {
+                            foreach (var song in songs)
+                            {
+                                <tr>
+                                    <td>@song.Title</td>
+                                    <td>@song.Duration</td>
+                                    <td>
+                                        <button class="btn btn-primary song-add-to-queue" data-songid="@song.SongId">Play Next</button>
+                                    </td>
+                                </tr>
+
+                            }
+                        }
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-5 mx-auto">
+            <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                <h2>Albums</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Release Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(albums != null)
+                        {
+                            @foreach (var album in albums)
+                            {
+                                <tr>
+                                    <td>@album.Title</td>
+                                    <td>@album.ArtistId</td>
+                                    <td>@album.ReleaseDate</td>
+                                    <td>
+                                        <button class="btn btn-primary album-add-to-queue" data-albumid="@album.AlbumId">Play Next</button>
+                                    </td>
+                                </tr>
+
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center view-more-link">
+                <a class="nav-link text-danger" asp-area="" asp-controller="Album" asp-action="Index">View More</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                <h2>Playlists</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Is Private</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(playlists != null)
+                        {
+                            @foreach (var playlist in playlists)
+                            {
+                                <tr>
+                                    <td>@playlist.Name</td>
+                                    <td>@playlist.IsPrivate</td>
+                                    <td>
+                                        <button class="btn btn-primary playlist-add-to-queue" data-playlistid="@playlist.PlaylistId">Play Next</button>
+                                    </td>
+                                </tr>
+
+                            }
+                        }
+                        
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center view-more-link">
+                <a class="nav-link text-danger" asp-area="" asp-controller="Playlist" asp-action="Index">View More</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<script>
+    var audio = document.getElementById("musicPlayer");
+    var audioSource = document.getElementById("audioSource");
+    var songs = @Html.Raw(Json.Serialize(Model.songs?.Select(s => s.AudioFilePath) ?? new List<string>()));
+    console.log(songs);
+    var currentIndex = @index
+
+    function playSong(index, filePath) {
+        // Play the selected song
+        audioSource.src = filePath;
+        audio.load(); // Reload the audio element to apply the new source
+        audio.play();
+        debugger;
+        $.ajax({
+            url: '/Users/SaveLastSongPlayed',
+            method: 'POST',
+            data: { lastPlayedSongId: index },
+            success: function (data) {
+                // Handle success if needed
+            },
+            error: function (error) {
+                console.error('Error saving last played song:', error);
+            }
+        });
+    }
+
+    // Attach click event to song items
+    $("body").on("click", ".song-item", function () {
+        debugger;
+        var songId = $(this).data("songid");
+        var filePath = $(this).data("filepath");
+        playSong(songId, filePath);
+    });
+    $(".playlist-add-to-queue").on("click", function () {
+        var songId = null;
+        var playlistId = $(this).data("playlistid"); // Set this based on your Playlist data
+        var albumId = null; // Set this based on your Album data
+
+        addToQueue(songId, playlistId, albumId);
+    });
+    $(".album-add-to-queue").on("click", function () {
+        debugger;
+        var songId = null;
+        var playlistId = null; // Set this based on your Playlist data
+        var albumId = $(this).data("albumid"); // Set this based on your Album data
+
+        addToQueue(songId, playlistId, albumId);
+    });
+    $(".song-add-to-queue").on("click", function () {
+        debugger;
+        var songId = $(this).data("songid");
+        var playlistId = null; // Set this based on your Playlist data
+        var albumId = null; // Set this based on your Album data
+
+        addToQueue(songId, playlistId, albumId);
+    });
+    $(".clear-queue").on("click", function () {
+        debugger;
+        $.ajax({
+            url: '/PlaylistQueue/FormatQueue?id=' + 1,
+            method: 'POST',
+            success: function (data) {
+                debugger;
+                if (data.message === "OK") {
+                    // Reload the page
+                    location.reload();
+                }
+            }
+        });
+    });
+
+    // Star rating functionality
+    $("body").on("click", ".rating .fa-star, .rating .fa-star-o", function () {
+        var rating = $(this).data("rating");
+        var songId = $(this).closest("li").find(".song-item").data("songid");
+        debugger;
+        // Add logic to send the rating and songId to the controller
+        $.ajax({
+            url: '/Songs/SaveRatings', // Update the URL to your controller action
+            method: 'POST',
+            data: { songId: songId, rating: rating },
+            success: function (data) {
+                // Handle success if needed
+            },
+            error: function (error) {
+                console.error('Error submitting rating:', error);
+            }
+        });
+       
+        // Update the star colors based on the selected rating
+        $(this).parent().children(".fa-star").removeClass("fa-star").addClass("fa-star-o");
+        $(this).removeClass("fa-star-o").addClass("fa-star");
+        $(this).prevAll(".fa-star").removeClass("fa-star").addClass("fa-star-o");
+    });
+
+    // Check if ViewBag.SongId is set, then play that song; otherwise, play the first song
+    $(document).ready(function () {
+        $(".rating").each(function () {
+            var userRating = parseInt($(this).data("user-rating"));
+            if (!isNaN(userRating)) {
+                var stars = $(this).find(".fa-star");
+                stars.removeClass("fa-star").addClass("fa-star-o"); // Reset all stars to outline style
+                stars.slice(0, userRating).removeClass("fa-star-o").addClass("fa-star"); // Fill stars up to user's rating
+                stars.each(function (index) {
+                    // Update the data-rating attribute based on the current index + 1
+                    $(this).attr("data-rating", index + 1);
+                });
+            } else {
+                // Handle the case when userRating is null (or not a number)
+                // For example, you can set a default behavior, like showing all stars as blank
+                $(this).find(".fa-star").removeClass("fa-star").addClass("fa-star-o");
+            }
+        });
+        if ('@index' != null && '@index' != '') {
+            console.log({ index: '@index' });
+            debugger;
+            var initialIndex = songs.findIndex(function (path) {
+                return path === '@Model.songs?.FirstOrDefault(s => s.SongId == ViewBag.SongId)?.AudioFilePath';
+            });
+            if (initialIndex !== -1) {
+                // If the song corresponding to ViewBag.SongId is found, play it
+                playSong('@index', songs[initialIndex]);
+            } else {
+                // If not found, default to playing the first song
+                playSong(0, songs[0]);
+            }
+        } else if (songs.length > 0) {
+            // Automatically play the first song when the page loads
+            playSong(0, songs[0]);
+        }
+    });
+
+    audio.addEventListener("ended", function () {
+        // Play the next song when the current one ends
+        currentIndex = (currentIndex + 1) % songs.length;
+        audioSource.src = songs[currentIndex];
+        audio.load(); // Reload the audio element to apply the new source
+        audio.play();
+    });
+
+    
+
+    function addToQueue(songId, playlistId, albumId) {
+        debugger;
+
+        var model = {
+            SongId: songId,
+            AlbumId: albumId,
+            PlaylistId: playlistId
+        }
+        $.ajax({
+            url: '/PlaylistQueue/AddQueue',
+            method: 'POST',
+            data: model,
+            success: function (data) {
+                console.log(data);
+                console.log(data.queueId);
+                if (data.queueId !== undefined) {
+                    var queueId = data.queueId;
+                    console.log(queueId);
+                    debugger;
+                    $.ajax({
+                        url: '/PlaylistQueue/GetLastQueueItem?queueId=' + queueId,
+                        method: 'GET',
+                        success: function (data) {
+                            console.log(data.queue);
+                            debugger;
+                            if (data.queue !== null) {
+                                var songList = $(".song-list"); // Assuming ul is the parent of your song items
+                                if (data.queue.playlistName !== null) {
+                                    songList.append('<li>' + '<div>' + data.queue.playlistName + '</div>' + '</li>');
+                                }
+                                for (var i = 1; i <= data.queue.songs.length; i++) {
+                                    var currentSong = data.queue.songs[i - 1];
+
+                                    songList.append('<li>' +
+                                        '<div class="song-item" data-songid="' + currentSong.songId + '" data-filepath="' + currentSong.audioFilePath + '">' +
+                                        currentSong.songTitle +
+                                        '</div>' +
+                                        '<div class="rating" data-songid="' + currentSong.songId + '" data-user-rating="' + currentSong.ratings + '">' +
+                                        generateStars(currentSong.ratings) +
+                                        '</div>' +
+                                        '</li>');
+                                }
+                                for (var i = 0; i < data.queue.songs.length; i++) {
+                                    var newSong = data.queue.songs[i];
+                                    songs.push(newSong.audioFilePath);
+                                }
+                                // Append a new li element with the song information
+                            }
+                        },
+                        error: function (xhr, textStatus, errorThrown) {
+                            console.error('Error getting last queue item:', xhr.status, textStatus, errorThrown);
+                        }
+                    });
+                }
+            },
+            error: function (error) {
+                console.error('Error adding to queue:', error);
+            }
+        });
+    }
+    function generateStars(rating) {
+        var starsHtml = '';
+        for (var i = 1; i <= 5; i++) {
+            var starClass = (i <= rating) ? 'fa-star' : 'fa-star-o';
+            starsHtml += '<i class="fa ' + starClass + '" data-rating="' + i + '"></i>';
+        }
+        return starsHtml;
+    }
+
+    $(document).ready(function () {
+        debugger;
+        $.ajax({
+            url: '/PlaylistQueue/GetQueueItems',
+            method: 'GET',
+            success: function (data) {
+                console.log(data.queue);
+                debugger;
+                if (data.queue !== null) {
+                    var songList = $(".song-list"); // Assuming ul is the parent of your song items
+                    data.queue.forEach(function (playlist) {
+                        // Iterate over songs in the current playlist
+                        if(playlist.playlistName != null){
+                            songList.append('<li>' + '<div>' + playlist.playlistName + '</div>' + '</li>');
+                        }
+                        playlist.songs.forEach(function (currentSong) {
+
+                            songList.append('<li>' +
+                                '<div class="song-item" data-songid="' + currentSong.songId + '" data-filepath="' + currentSong.audioFilePath + '">' +
+                                currentSong.songTitle +
+                                '</div>' +
+                                '<div class="rating" data-songid="' + currentSong.songId + '" data-user-rating="' + currentSong.ratings + '">' +
+                                generateStars(currentSong.ratings) +
+                                '</div>' +
+                                '</li>');
+                            songs.push(currentSong.audioFilePath);
+                        });
+                    });
+                    // for (var i = 0; i < data.queue.songs.length; i++) {
+                    //     var newSong = data.queue.songs[i];
+                    //     songs.push(newSong.audioFilePath);
+                    // }
+                    // Append a new li element with the song information
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.error('Error getting last queue item:', xhr.status, textStatus, errorThrown);
+            }
+        });
+    });
+
+</script>

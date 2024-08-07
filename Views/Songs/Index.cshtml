@@ -1,0 +1,70 @@
+﻿@model IEnumerable<asp_applicatie.ViewModels.SongViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Edit">Create New</a>
+</p>
+
+<p>
+    Search: <input type="text" name="searchString" id="searchString" />
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.SongTitle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.album.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Duration)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SongTitle)
+            </td>
+            <td>
+                 @Html.DisplayFor(modelItem => item.album.Title)
+             </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Duration)
+            </td>
+            <td>
+                    <a asp-action="Details" asp-route-id="@item.SongId">Add to Fav</a> |
+                    <a asp-controller="Player" asp-action="Index" asp-route-id="@item.SongId">Play</a> |
+                    <a asp-action="Edit" asp-route-id="@item.SongId">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.SongId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<script>
+    $(function () {
+        $("#searchString").on("input", function () {
+            var searchText = $(this).val().toLowerCase();
+
+            $("tbody tr").each(function () {
+                var rowText = $(this).text().toLowerCase();
+                $(this).toggle(rowText.includes(searchText));
+            });
+        });
+    });
+</script>

@@ -1,0 +1,90 @@
+﻿@model asp_applicatie.Models.Song
+
+@{
+    var Albums = ViewData["Albums"] as List<SelectListItem>;
+
+    ViewData["Title"] = "Edit";
+
+    SelectList GetAlbums()
+    {
+        return new SelectList(Albums, "Value", "Text");
+    }
+}
+
+
+<h4>Song</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Save">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="SongId" />
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AudioFilePath" class="control-label"></label>
+                <input type="file" id="Image1Input" accept="file/*" class="form-control" />
+                <span asp-validation-for="AudioFilePath" class="text-danger"></span>
+                <input type="hidden" asp-for="AudioFilePath" id="ProductImage1Hidden" />
+            </div>
+            <div class="form-group">
+                <label asp-for="AlbumId" class="control-label">Select Album</label>
+                <select asp-for="AlbumId" asp-items="@GetAlbums()" class="form-control"></select>
+                <span asp-validation-for="AlbumId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Duration" class="control-label"></label>
+                <input asp-for="Duration" class="form-control" />
+                <span asp-validation-for="Duration" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(document).on('change', '#Image1Input', async function () {
+            if (!this.files)
+                return;
+
+            const file = this.files[0];
+            const formData = new FormData();
+            formData.append('imageFile', file);
+
+            try {
+                const response = await fetch('/Songs/UploadImage', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.status !== 200) {
+                    console.log(response.status);
+                    return;
+                }
+                debugger;
+                const hiddenInput = document.getElementById('ProductImage1Hidden');
+                const data = (await response.json())[0];
+                hiddenInput.value = data;
+                console.log(hiddenInput)
+            } catch (e) {
+                console.log(e);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,41 @@
+﻿@model asp_applicatie.Models.PlaylistSong
+
+@{
+    var playlists = ViewData["Playlists"] as List<SelectListItem>;
+    var SongId = ViewBag.Id;
+
+    ViewData["Title"] = "Details";
+
+    SelectList GetPlaylistItems()
+    {
+        return new SelectList(playlists, "Value", "Text");
+    }
+}
+
+<h1>Add to Favourite</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="AddtoPlaylist">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="SongId" value="@ViewBag.Id" />
+            <input type="hidden" asp-for="Status" value="1" />
+
+            <div class="form-group">
+                <label asp-for="PlaylistId" class="control-label">Select Playlist</label>
+                <select asp-for="PlaylistId" asp-items="@GetPlaylistItems()" class="form-control"></select>
+                <span asp-validation-for="PlaylistId" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

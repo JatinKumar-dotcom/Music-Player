@@ -1,0 +1,108 @@
+﻿@model asp_applicatie.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+<style>
+    .table-container {
+        margin-bottom: 10px; /* Adjust the margin as needed */
+    }
+
+    .view-more-link {
+        margin-top: -23px; /* Adjust the margin as needed */
+    }
+</style>
+<div class="container text-center">
+    <h1 class="display-4">Welcome</h1>
+</div>
+
+<br />
+<br />
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mx-auto">
+            <div class="table-container">
+                <h2>Songs</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var song in Model.Song.Take(5))
+                        {
+                            <tr>
+                                <td>@song.Title</td>
+                                <td>@song.Duration</td>
+                            </tr>
+                        
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center view-more-link">
+                <a class="nav-link text-danger" asp-area="" asp-controller="Songs" asp-action="Index">View More</a>
+            </div>
+        </div>
+
+        <div class="col-md-5 mx-auto">
+            <div class="table-container">
+                <h2>Albums</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Release Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var album in Model.albums.Take(5))
+                        {
+                            <tr>
+                                <td>@album.Title</td>
+                                <td>@album.ArtistId</td>
+                                <td>@album.ReleaseDate</td>
+                            </tr>
+                        
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center view-more-link">
+                <a class="nav-link text-danger" asp-area="" asp-controller="Album" asp-action="Index">View More</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row"> 
+        <div class="col-md-6 mx-auto">
+            <div class="table-container">
+                <h2>Playlists</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Is Private</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var playlist in Model.Playlists.Take(5))
+                        {
+                            <tr>
+                                <td>@playlist.Name</td>
+                                <td>@playlist.IsPrivate</td>
+                            </tr>
+                        
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center view-more-link">
+                <a class="nav-link text-danger" asp-area="" asp-controller="Playlist" asp-action="Index">View More</a>
+            </div>
+        </div>
+    </div>
+</div>
